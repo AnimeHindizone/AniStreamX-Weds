@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AniStreamX - Search</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="header">
+        <button onclick="window.history.back()" style="color:white; font-size:20px;">←</button>
+        <h1>ANI<span>STREAMX</span></h1>
+        <div style="width: 20px;"></div>
+    </header>
+
+    <div class="container">
+        <input type="text" id="searchInput" placeholder="Search anime..." class="search-bar">
+        <div id="searchResults" class="anime-grid">
+            <p style="color:#555; grid-column: span 3; text-align:center; margin-top:20px;">Type to search...</p>
+        </div>
+    </div>
+
+    <nav class="bottom-nav">
+        <a href="index.html" class="nav-item">🏠<span>HOME</span></a>
+        <a href="#" class="nav-item">❤️<span>LIST</span></a>
+        <a href="#" class="nav-item">🔄<span>REFRESH</span></a>
+        <a href="#" class="nav-item">👤<span>JOIN</span></a>
+    </nav>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script>
+        const firebaseConfig = { databaseURL: "https://anistreamx-903a3-default-rtdb.firebaseio.com/" };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        document.getElementById('searchInput').addEventListener('input', function() {
+            const q = this.value.trim().toLowerCase();
+            const c = document.getElementById('searchResults');
+            if (q.length < 2) { c.innerHTML = '<p style="color:#555; grid-column: span 3; text-align:center; margin-top:20px;">Type at least 2 characters...</p>'; return; }
+            c.innerHTML = '<p style="color:#555; grid-column: span 3; text-align:center; margin-top:20px;">Searching...</p>';
+
+            db.ref('anime').once('value', snap => {
+                const data = snap.val(); c.innerHTML = ''; let found = false;
+                if (!data) { c.innerHTML = '<p style="color:#555; grid-column: span 3; text-align:center;">No data found.</p>'; return; }
+                Object.keys(data).forEach(key => {
+                    const a = data[key];
+                    if (a.title && a.title.toLowerCase().includes(q)) {
+                        found = true;
+                        c.innerHTML += `
+                            <div onclick="window.location.href='watch.html?id=${key}'" class="anime-card">
+                                <img src="${a.poster}"><span class="rating">⭐ ${a.rating}</span>
+                                <p class="title">${a.title}</p>
+                            </div>`;
+                    }
+                });
+                if (!found) c.innerHTML = `<p style="color:#555; grid-column: span 3; text-align:center;">No results for "${q}"</p>`;
+            });
+        });
+    </script>
+</body>
+</html>
