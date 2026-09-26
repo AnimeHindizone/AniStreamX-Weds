@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AniStreamX - Watch</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="header">
+        <button onclick="window.history.back()" style="color:white; font-size:20px;">←</button>
+        <h1>ANI<span>STREAMX</span></h1>
+        <div class="header-icons"><span>🔗</span><span>🚩</span></div>
+    </header>
+
+    <div class="container">
+        <div id="animeInfo" class="anime-info"><p style="color:#555;">Loading details...</p></div>
+        
+        <div class="player-container" id="videoContainer">
+            <p style="color:#555; text-align:center; padding-top:20%;">Loading Player...</p>
+        </div>
+
+        <div class="warning-box">
+            <b>⚠️ No Audio / Sound in Browser? (EAC3 / Dolby Codec):</b> Web browsers me EAC3 audio decode nahi hota. Solution: Video download karke MX Player / VLC Player me play karein.
+        </div>
+
+        <div id="downloadSection" class="download-section">
+            <h3>Download Links</h3>
+            <p style="color:#555; font-size:14px;">Loading links...</p>
+        </div>
+
+        <div class="action-grid">
+            <button class="action-btn">❤️ Add to Watchlist</button>
+            <button class="action-btn">⚙️ Server 2</button>
+            <button class="action-btn full">🖼️ Picture-in-Picture</button>
+        </div>
+
+        <div class="support-box">
+            <p>Please use Shortener to download — it helps support the site.</p>
+            <small>Shortener use karke download karo, isse site ko support milta hai. Thank you! 🙏</small>
+        </div>
+    </div>
+
+    <nav class="bottom-nav">
+        <a href="index.html" class="nav-item">🏠<span>HOME</span></a>
+        <a href="#" class="nav-item active">▶️<span>WATCH</span></a>
+        <a href="#" class="nav-item">🔄<span>REFRESH</span></a>
+        <a href="#" class="nav-item">👤<span>JOIN</span></a>
+    </nav>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script>
+        const firebaseConfig = { databaseURL: "https://anistreamx-903a3-default-rtdb.firebaseio.com/" };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const animeId = urlParams.get('id');
+
+        if(animeId) {
+            db.ref('analytics/page_views/watch').transaction(val => (val || 0) + 1);
+            db.ref('anime/' + animeId).once('value', snap => {
+                const a = snap.val();
+                if(a) {
+                    document.getElementById('animeInfo').innerHTML = `
+                        <img src="${a.poster}">
+                        <h2>${a.title}</h2>
+                        <div class="tags">
+                            <span class="tag rating">⭐ ${a.rating}</span>
+                            <span class="tag">${a.type}</span>
+                            <span class="tag">FINISHED</span>
+                        </div>
+                        <div class="tags">
+                            ${a.genres ? a.genres.map(g => `<span class="tag" style="background:#222; color:#aaa;">${g}</span>`).join('') : ''}
+                        </div>
+                        <p class="synopsis">${a.synopsis}</p>
+                    `;
+
+                    if(a.stream_link) {
+                        document.getElementById('videoContainer').innerHTML = `<iframe src="${a.stream_link}" allowfullscreen></iframe>`;
+                    } else {
+                        document.getElementById('videoContainer').innerHTML = `<p style="color:#ef4444; text-align:center; padding-top:20%;">No stream link available.</p>`;
+                    }
+
+                    const dl = document.getElementById('downloadSection');
+                    dl.innerHTML = '<h3>Download Links</h3>';
+                    if(a.downloads) {
+                        ['1080p', '720p', '480p'].forEach(q => {
+                            if(a.downloads[q]) {
+                                dl.innerHTML += `
+                                    <a href="${a.downloads[q]}" target="_blank" class="download-btn">
+                                        <span class="quality">☁️ Download ${q}</span>
+                                        <span class="check">✅</span>
+                                    </a>`;
+                            }
+                        });
+                    } else {
+                        dl.innerHTML += `<p style="color:#555; font-size:14px;">No download links available.</p>`;
+                    }
+                } else {
+                    document.getElementById('animeInfo').innerHTML = `<p style="color:#ef4444;">Anime not found.</p>`;
+                }
+            });
+        } else {
+            document.getElementById('animeInfo').innerHTML = `<p style="color:#ef4444;">Invalid Request.</p>`;
+        }
+    </script>
+</body>
+</html>
