@@ -6,48 +6,81 @@
     <title>AniStreamX - Watch</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
-    <header class="header">
-        <button onclick="window.history.back()" style="color:white; font-size:20px;">←</button>
+<body style="padding-bottom: 70px;">
+
+    <!-- Header -->
+    <header class="watch-header">
+        <button onclick="window.history.back()" style="font-size: 20px;">←</button>
         <h1>ANI<span>STREAMX</span></h1>
-        <div class="header-icons"><span>🔗</span><span>🚩</span></div>
+        <div class="icons"><span>🔗</span><span>🚩</span></div>
     </header>
 
-    <div class="container">
-        <div id="animeInfo" class="anime-info"><p style="color:#555;">Loading details...</p></div>
-        
-        <div class="player-container" id="videoContainer">
-            <p style="color:#555; text-align:center; padding-top:20%;">Loading Player...</p>
-        </div>
+    <!-- Anime Info (Loaded via JS) -->
+    <div id="animeInfo" class="container text-center" style="padding: 20px 15px;">
+        <p style="color:#555;">Loading details...</p>
+    </div>
 
-        <div class="warning-box">
-            <b>⚠️ No Audio / Sound in Browser? (EAC3 / Dolby Codec):</b> Web browsers me EAC3 audio decode nahi hota. Solution: Video download karke MX Player / VLC Player me play karein.
-        </div>
+    <!-- Video Player -->
+    <div class="player-container" id="videoContainer">
+        <p style="color:#555; text-align:center; padding-top:20%;">Loading Player...</p>
+    </div>
 
-        <div id="downloadSection" class="download-section">
-            <h3>Download Links</h3>
-            <p style="color:#555; font-size:14px;">Loading links...</p>
-        </div>
+    <!-- Player Controls (Visual only) -->
+    <div class="player-controls">
+        <span>⏪ 10s</span>
+        <span>▶️ 1x</span>
+        <span>720p 🔽</span>
+        <span>🖼️</span>
+    </div>
 
-        <div class="action-grid">
-            <button class="action-btn">❤️ Add to Watchlist</button>
-            <button class="action-btn">⚙️ Server 2</button>
-            <button class="action-btn full">🖼️ Picture-in-Picture</button>
-        </div>
+    <!-- Warning Box -->
+    <div class="warning-box">
+        <b>⚠️ No Audio / Sound in Browser? (EAC3 / Dolby Codec):</b> Web browsers me EAC3 audio decode nahi hota. Solution: Video download karke <b>MX Player / VLC Player</b> me play karein.
+    </div>
 
-        <div class="support-box">
-            <p>Please use Shortener to download — it helps support the site.</p>
-            <small>Shortener use karke download karo, isse site ko support milta hai. Thank you! 🙏</small>
+    <!-- Download Section -->
+    <div id="downloadSection" class="download-section">
+        <p style="color:#555; font-size:13px;">Loading links...</p>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-grid">
+        <button class="action-btn">⚙️ Server 2</button>
+        <button class="action-btn highlight">❤️ Add to Watchlist</button>
+        <button class="action-btn">✨ Ambient Mode: ON</button>
+        <button class="action-btn">⏩ Auto Skip: ON</button>
+        <button class="action-btn full">🖼️ Picture-in-Picture</button>
+    </div>
+
+    <!-- Shortener Support Box -->
+    <div class="shortener-box">
+        <p>Please use Shortener to download — it helps support the site.</p>
+        <small>Shortener use karke download karo, isse site ko support milta hai. Thank you! 🙏</small>
+    </div>
+
+    <!-- Seasons & Movies -->
+    <div class="seasons-section">
+        <div class="section-header" style="margin-top:0;"><h2>SEASONS & MOVIES</h2></div>
+        <div class="season-card">
+            <img src="https://placehold.co/100x120/222/fff?text=S1">
+            <div class="label">Season <span>1</span></div>
         </div>
     </div>
 
+    <!-- Episodes Grid -->
+    <div class="episodes-grid" id="episodesGrid">
+        <!-- Rendered by JS -->
+    </div>
+
+    <!-- Bottom Navigation -->
     <nav class="bottom-nav">
-        <a href="index.html" class="nav-item">🏠<span>HOME</span></a>
-        <a href="#" class="nav-item active">▶️<span>WATCH</span></a>
-        <a href="#" class="nav-item">🔄<span>REFRESH</span></a>
-        <a href="#" class="nav-item">👤<span>JOIN</span></a>
+        <a href="index.html" class="nav-item"><i>🏠</i><span>HOME</span></a>
+        <a href="#" class="nav-item active"><i>▶️</i><span>WATCH</span></a>
+        <a href="#" class="nav-item"><i>🔄</i><span>REFRESH</span></a>
+        <a href="#" class="nav-item"><i>👤</i><span>JOIN</span></a>
     </nav>
 
+    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <script>
@@ -59,45 +92,66 @@
         const animeId = urlParams.get('id');
 
         if(animeId) {
-            db.ref('analytics/page_views/watch').transaction(val => (val || 0) + 1);
             db.ref('anime/' + animeId).once('value', snap => {
                 const a = snap.val();
                 if(a) {
+                    // Info Box
                     document.getElementById('animeInfo').innerHTML = `
-                        <img src="${a.poster}">
-                        <h2>${a.title}</h2>
-                        <div class="tags">
-                            <span class="tag rating">⭐ ${a.rating}</span>
-                            <span class="tag">${a.type}</span>
-                            <span class="tag">FINISHED</span>
+                        <img src="${a.poster}" style="width:140px; height:200px; border-radius:10px; margin:0 auto 15px; box-shadow:0 10px 20px rgba(0,0,0,0.5);">
+                        <h2 style="font-size:20px; font-weight:bold;">${a.title}</h2>
+                        <div style="display:flex; justify-content:center; gap:8px; margin:10px 0; flex-wrap:wrap;">
+                            <span style="background:#ef4444; color:white; padding:4px 10px; border-radius:6px; font-size:11px; font-weight:bold;">⭐ ${a.rating}</span>
+                            <span style="background:#222; padding:4px 10px; border-radius:6px; font-size:11px;">S1</span>
+                            <span style="background:#222; padding:4px 10px; border-radius:6px; font-size:11px;">E1</span>
+                            <span style="background:#222; padding:4px 10px; border-radius:6px; font-size:11px;">FINISHED</span>
+                            <span style="background:#ef4444; color:white; padding:4px 10px; border-radius:6px; font-size:11px; font-weight:bold;">हिंदी</span>
                         </div>
-                        <div class="tags">
-                            ${a.genres ? a.genres.map(g => `<span class="tag" style="background:#222; color:#aaa;">${g}</span>`).join('') : ''}
+                        <div style="display:flex; justify-content:center; gap:8px; margin-bottom:15px; flex-wrap:wrap;">
+                            ${a.genres ? a.genres.map(g => `<span style="background:#222; color:#aaa; padding:4px 10px; border-radius:6px; font-size:11px;">${g}</span>`).join('') : ''}
                         </div>
-                        <p class="synopsis">${a.synopsis}</p>
+                        <p style="font-size:13px; color:#9ca3af; text-align:left; line-height:1.5;">${a.synopsis}</p>
                     `;
 
+                    // Video Player
                     if(a.stream_link) {
                         document.getElementById('videoContainer').innerHTML = `<iframe src="${a.stream_link}" allowfullscreen></iframe>`;
                     } else {
                         document.getElementById('videoContainer').innerHTML = `<p style="color:#ef4444; text-align:center; padding-top:20%;">No stream link available.</p>`;
                     }
 
+                    // Download Links
                     const dl = document.getElementById('downloadSection');
-                    dl.innerHTML = '<h3>Download Links</h3>';
+                    dl.innerHTML = '';
                     if(a.downloads) {
                         ['1080p', '720p', '480p'].forEach(q => {
                             if(a.downloads[q]) {
                                 dl.innerHTML += `
-                                    <a href="${a.downloads[q]}" target="_blank" class="download-btn">
-                                        <span class="quality">☁️ Download ${q}</span>
+                                    <a href="${a.downloads[q]}" target="_blank" class="dl-item">
+                                        <div class="left">
+                                            <span>☁️</span>
+                                            <div>
+                                                <div class="quality">Download v${q === '1080p' ? '1' : q === '720p' ? '2' : '3'}</div>
+                                                <div class="quality-tag">${q}</div>
+                                            </div>
+                                        </div>
                                         <span class="check">✅</span>
                                     </a>`;
                             }
                         });
-                    } else {
-                        dl.innerHTML += `<p style="color:#555; font-size:14px;">No download links available.</p>`;
                     }
+
+                    // Episodes Grid (Dummy generation for now)
+                    const epGrid = document.getElementById('episodesGrid');
+                    epGrid.innerHTML = '';
+                    for(let i=1; i<=7; i++) {
+                        epGrid.innerHTML += `
+                            <div class="episode-card">
+                                <span class="ep-num">${i}</span>
+                                <img src="https://placehold.co/150x80/222/fff?text=EP+${i}">
+                                <p class="ep-title">Episode ${i}</p>
+                            </div>`;
+                    }
+
                 } else {
                     document.getElementById('animeInfo').innerHTML = `<p style="color:#ef4444;">Anime not found.</p>`;
                 }
