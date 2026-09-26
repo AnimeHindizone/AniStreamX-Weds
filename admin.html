@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AniStreamX - Admin</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body style="padding-bottom:0;">
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="login-modal">
+        <div class="login-box">
+            <h2>ANISTREAMX</h2>
+            <p>Admin Panel Login</p>
+            <input type="password" id="adminPassword" placeholder="Enter Password">
+            <button onclick="login()">Login</button>
+            <p id="loginError" style="color:#ef4444; font-size:12px; margin-top:10px; display:none;">Incorrect Password!</p>
+        </div>
+    </div>
+
+    <!-- Admin Layout -->
+    <div id="mainLayout" class="admin-layout" style="display:none;">
+        <aside class="admin-sidebar">
+            <div class="admin-logo">
+                <h2>ANI<span>STREAMX</span></h2>
+                <p style="font-size:12px; color:#555;">Admin Panel</p>
+            </div>
+            <nav class="admin-nav">
+                <button onclick="showTab('dashboard')" id="tab-dashboard" class="admin-nav-btn active">Dashboard</button>
+                <button onclick="showTab('addAnime')" id="tab-addAnime" class="admin-nav-btn">Add / Edit Anime</button>
+                <button onclick="showTab('manageAnime')" id="tab-manageAnime" class="admin-nav-btn">Manage Content</button>
+                <button onclick="showTab('analytics')" id="tab-analytics" class="admin-nav-btn">Analytics</button>
+            </nav>
+            <div style="padding:15px; border-top:1px solid #222;">
+                <button onclick="logout()" style="width:100%; padding:10px; background:#222; color:white; border-radius:8px; font-weight:bold;">Logout</button>
+            </div>
+        </aside>
+
+        <main class="admin-main">
+            <!-- Dashboard -->
+            <div id="dashboard" class="tab-content">
+                <h2 style="margin-bottom:20px;">Dashboard Overview</h2>
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:20px;">
+                    <div class="admin-card"><p style="color:#9ca3af; font-size:14px;">Total Anime</p><h3 id="totalAnime" style="font-size:28px;">0</h3></div>
+                    <div class="admin-card"><p style="color:#9ca3af; font-size:14px;">Today's Users</p><h3 id="totalUsers" style="font-size:28px;">0</h3></div>
+                    <div class="admin-card"><p style="color:#9ca3af; font-size:14px;">Total Views</p><h3 id="totalViews" style="font-size:28px;">0</h3></div>
+                </div>
+            </div>
+
+            <!-- Add Anime -->
+            <div id="addAnime" class="tab-content" style="display:none;">
+                <h2 style="margin-bottom:20px;">Add / Edit Anime</h2>
+                
+                <div class="admin-card">
+                    <label style="color:#9ca3af; font-size:13px; display:block; margin-bottom:10px;">Search Anime on AniList (Auto-fill)</label>
+                    <div style="display:flex; gap:10px;">
+                        <input type="text" id="anilistSearch" placeholder="e.g. Naruto..." style="flex:1; padding:12px; background:#222; border:1px solid #333; border-radius:8px; color:white;">
+                        <button onclick="searchAniList()" style="padding:12px 20px; background:#2563eb; color:white; border-radius:8px; font-weight:bold;">Search</button>
+                    </div>
+                    <div id="searchResults" style="display:none; margin-top:15px; background:#222; border-radius:8px; padding:10px; max-height:200px; overflow-y:auto;"></div>
+                </div>
+
+                <div class="admin-card">
+                    <input type="hidden" id="editId">
+                    <div class="form-group"><label>Title</label><input type="text" id="title"></div>
+                    <div class="form-group"><label>Type</label><select id="type"><option>Series</option><option>Movie</option></select></div>
+                    <div class="form-group"><label>Poster URL</label><input type="text" id="poster"></div>
+                    <div class="form-group"><label>Banner URL (Optional)</label><input type="text" id="banner"></div>
+                    <div class="form-group"><label>Rating</label><input type="text" id="rating"></div>
+                    <div class="form-group"><label>Genres (Comma separated)</label><input type="text" id="genres"></div>
+                    <div class="form-group"><label>Synopsis</label><textarea id="synopsis" rows="3"></textarea></div>
+                    
+                    <h3 style="color:#ef4444; margin:20px 0 10px;">Streaming & Download Links</h3>
+                    <div class="form-group"><label>Streaming Link (Player URL)</label><input type="text" id="streamLink"></div>
+                    <div class="form-group"><label>Download 1080p (Shortener Link)</label><input type="text" id="dl_1080p"></div>
+                    <div class="form-group"><label>Download 720p (Shortener Link)</label><input type="text" id="dl_720p"></div>
+                    <div class="form-group"><label>Download 480p (Shortener Link)</label><input type="text" id="dl_480p"></div>
+
+                    <h3 style="color:#ef4444; margin:20px 0 10px;">Sections</h3>
+                    <div style="display:flex; flex-wrap:wrap; gap:15px; margin-bottom:15px;">
+                        <label style="font-size:13px; color:#ccc;"><input type="checkbox" id="sec_top_ten"> Top 10</label>
+                        <label style="font-size:13px; color:#ccc;"><input type="checkbox" id="sec_trending"> Trending</label>
+                        <label style="font-size:13px; color:#ccc;"><input type="checkbox" id="sec_recently_added"> Recently Added</label>
+                        <label style="font-size:13px; color:#ccc;"><input type="checkbox" id="sec_for_you"> For You</label>
+                    </div>
+                    <button class="btn-save" onclick="saveAnime()">Save Anime</button>
+                </div>
+            </div>
+
+            <!-- Manage Anime -->
+            <div id="manageAnime" class="tab-content" style="display:none;">
+                <h2 style="margin-bottom:20px;">Manage Content</h2>
+                <div id="animeList" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:20px;"></div>
+            </div>
+
+            <!-- Analytics -->
+            <div id="analytics" class="tab-content" style="display:none;">
+                <h2 style="margin-bottom:20px;">Analytics</h2>
+                <div class="admin-card"><p style="color:#555; text-align:center; padding:20px;">Analytics data will appear here.</p></div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="admin.js"></script>
+</body>
+  </html>
