@@ -3,7 +3,7 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const ADMIN_PASSWORD = "Admin@123";
 
-// Login
+// Login System
 function login() {
     if (document.getElementById('adminPassword').value === ADMIN_PASSWORD) {
         sessionStorage.setItem('adminLoggedIn', 'true');
@@ -28,18 +28,18 @@ window.onload = function() {
 // Tabs
 function showTab(id) {
     document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
-    document.querySelectorAll('.admin-nav-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
     document.getElementById(id).style.display = 'block';
     document.getElementById('tab-' + id).classList.add('active');
 }
 
-// AniList Search
+// AniList API Search
 async function searchAniList() {
     const q = document.getElementById('anilistSearch').value.trim();
     if (!q) return alert("Enter anime name");
     const resDiv = document.getElementById('searchResults');
     resDiv.style.display = 'block';
-    resDiv.innerHTML = '<p style="color:#555;">Searching...</p>';
+    resDiv.innerHTML = '<p style="padding: 15px; color: #71717a;">Searching AniList...</p>';
 
     const query = `query ($search: String) { Page(page: 1, perPage: 5) { media(search: $search, type: ANIME, sort: POPULARITY_DESC) { title { romaji english } coverImage { large } bannerImage description averageScore genres } } }`;
     try {
@@ -53,12 +53,12 @@ async function searchAniList() {
         list.forEach(a => {
             const title = a.title.english || a.title.romaji;
             const div = document.createElement('div');
-            div.style.cssText = 'display:flex; gap:10px; padding:8px; border-bottom:1px solid #333; cursor:pointer;';
-            div.innerHTML = `<img src="${a.coverImage.large}" style="width:40px; height:60px; object-fit:cover; border-radius:4px;"><div><p style="font-size:14px; font-weight:bold;">${title}</p><p style="font-size:12px; color:#facc15;">⭐ ${a.averageScore/10 || 'N/A'}</p></div>`;
+            div.className = 'result-item';
+            div.innerHTML = `<img src="${a.coverImage.large}"><div class="info"><h4>${title}</h4><p>⭐ ${a.averageScore/10 || 'N/A'}</p></div>`;
             div.onclick = () => fillForm(a);
             resDiv.appendChild(div);
         });
-    } catch (e) { resDiv.innerHTML = '<p style="color:#ef4444;">Error fetching data.</p>'; }
+    } catch (e) { resDiv.innerHTML = '<p style="padding: 15px; color: #ef4444;">Error fetching data.</p>'; }
 }
 
 function fillForm(a) {
@@ -101,7 +101,7 @@ function saveAnime() {
                 ref.set(list);
             });
         });
-        alert("Saved successfully!");
+        alert("Anime saved successfully!");
         clearForm(); loadAnimeList(); showTab('manageAnime');
     });
 }
@@ -116,17 +116,19 @@ function clearForm() {
 function loadAnimeList() {
     db.ref('anime').on('value', snap => {
         const data = snap.val(); const c = document.getElementById('animeList'); c.innerHTML = '';
-        if (!data) { c.innerHTML = '<p style="color:#555;">No data.</p>'; return; }
+        if (!data) { c.innerHTML = '<p style="color:#71717a;">No data.</p>'; return; }
         Object.keys(data).forEach(k => {
             const a = data[k];
             c.innerHTML += `
-                <div class="admin-card" style="padding:15px;">
-                    <img src="${a.poster}" style="width:100%; height:200px; object-fit:cover; border-radius:8px; margin-bottom:10px;">
-                    <h4 style="font-size:16px;">${a.title}</h4>
-                    <p style="font-size:12px; color:#9ca3af; margin-bottom:10px;">${a.type} • ⭐ ${a.rating}</p>
-                    <div style="display:flex; gap:10px;">
-                        <button onclick="editAnime('${k}')" style="flex:1; padding:8px; background:#2563eb; color:white; border-radius:6px; font-size:12px;">Edit</button>
-                        <button onclick="deleteAnime('${k}')" style="flex:1; padding:8px; background:#ef4444; color:white; border-radius:6px; font-size:12px;">Delete</button>
+                <div class="admin-card">
+                    <img src="${a.poster}">
+                    <div class="card-body">
+                        <h4>${a.title}</h4>
+                        <p>${a.type} • ⭐ ${a.rating}</p>
+                        <div class="actions">
+                            <button class="btn-edit" onclick="editAnime('${k}')">Edit</button>
+                            <button class="btn-delete" onclick="deleteAnime('${k}')">Delete</button>
+                        </div>
                     </div>
                 </div>`;
         });
@@ -182,4 +184,4 @@ function loadDashboardData() {
     });
     const today = new Date().toISOString().split('T')[0];
     db.ref('analytics/daily_users/' + today).on('value', s => document.getElementById('totalUsers').innerText = s.val() || 0);
-              }
+}
