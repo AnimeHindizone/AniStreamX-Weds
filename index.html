@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AniStreamX - Home</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="header">
+        <h1>ANI<span>STREAMX</span></h1>
+        <div class="header-icons">
+            <a href="search.html">🔍</a>
+            <span>🔔</span>
+        </div>
+    </header>
+
+    <main class="container">
+        <section id="heroSection" class="hero-banner">
+            <p style="color: #555; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);">Loading...</p>
+        </section>
+
+        <section>
+            <div class="section-header"><h2>TOP 10 THIS WEEK</h2><span>SEE ALL</span></div>
+            <div id="topTenList" class="top-ten-list"></div>
+        </section>
+
+        <section>
+            <div class="section-header"><h2>TRENDING NOW</h2><span>SEE ALL</span></div>
+            <div id="trendingGrid" class="anime-grid"></div>
+        </section>
+
+        <section>
+            <div class="section-header"><h2>RECENTLY ADDED</h2><span>SEE ALL</span></div>
+            <div id="recentGrid" class="anime-grid"></div>
+        </section>
+    </main>
+
+    <nav class="bottom-nav">
+        <a href="index.html" class="nav-item active">🏠<span>HOME</span></a>
+        <a href="#" class="nav-item">❤️<span>LIST</span></a>
+        <a href="#" class="nav-item">🔄<span>REFRESH</span></a>
+        <a href="#" class="nav-item">👤<span>JOIN</span></a>
+    </nav>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script>
+        const firebaseConfig = { databaseURL: "https://anistreamx-903a3-default-rtdb.firebaseio.com/" };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // Hero Banner
+        db.ref('sections/trending').on('value', snap => {
+            const ids = snap.val() || [];
+            if(ids.length > 0) {
+                db.ref('anime/' + ids[0]).once('value', s => {
+                    const a = s.val();
+                    if(a) document.getElementById('heroSection').innerHTML = `
+                        <img src="${a.banner || a.poster}">
+                        <div class="hero-content">
+                            <h3>${a.title}</h3>
+                            <p>⭐ ${a.rating} • ${a.type}</p>
+                            <button onclick="window.location.href='watch.html?id=${ids[0]}'" class="btn-watch">WATCH NOW</button>
+                        </div>`;
+                });
+            }
+        });
+
+        // Top 10
+        db.ref('sections/top_ten').on('value', snap => {
+            const ids = snap.val() || []; const c = document.getElementById('topTenList'); c.innerHTML = '';
+            ids.slice(0, 10).forEach((id, i) => {
+                db.ref('anime/' + id).once('value', s => {
+                    const a = s.val();
+                    if(a) c.innerHTML += `
+                        <div onclick="window.location.href='watch.html?id=${id}'" class="top-item">
+                            <span class="top-number">0${i+1}</span>
+                            <img src="${a.poster}">
+                            <div class="top-info"><h4>${a.title}</h4><p>⭐ ${a.rating}</p></div>
+                        </div>`;
+                });
+            });
+        });
+
+        // Trending
+        db.ref('sections/trending').on('value', snap => {
+            const ids = snap.val() || []; const c = document.getElementById('trendingGrid'); c.innerHTML = '';
+            ids.forEach(id => {
+                db.ref('anime/' + id).once('value', s => {
+                    const a = s.val();
+                    if(a) c.innerHTML += `
+                        <div onclick="window.location.href='watch.html?id=${id}'" class="anime-card">
+                            <img src="${a.poster}"><span class="rating">⭐ ${a.rating}</span>
+                            <p class="title">${a.title}</p>
+                        </div>`;
+                });
+            });
+        });
+
+        // Recently Added
+        db.ref('sections/recently_added').on('value', snap => {
+            const ids = snap.val() || []; const c = document.getElementById('recentGrid'); c.innerHTML = '';
+            ids.forEach(id => {
+                db.ref('anime/' + id).once('value', s => {
+                    const a = s.val();
+                    if(a) c.innerHTML += `
+                        <div onclick="window.location.href='watch.html?id=${id}'" class="anime-card">
+                            <img src="${a.poster}"><p class="title">${a.title}</p>
+                        </div>`;
+                });
+            });
+        });
+    </script>
+</body>
+  </html>
